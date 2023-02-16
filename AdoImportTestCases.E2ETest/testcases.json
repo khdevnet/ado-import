@@ -1,0 +1,117 @@
+[
+  {
+    "Info": {
+      "Name": "User registered event processing",
+      "Labels": [],
+      "Description": "UserRegisteredEvent"
+    },
+    "Scenarios": [
+      {
+        "Info": {
+          "Name": "Handle verified User event",
+          "Code": "2CE17DB0",
+          "Parent": {
+            "Name": "User registered event processing",
+            "Labels": [],
+            "Description": "UserRegisteredEvent"
+          },
+          "Labels": [],
+          "Categories": []
+        },
+        "AutomatedTestName": "ComponentTests.IntegrationMessages.User_registered_event_processing.Handle_verified_User_event",
+        "AutomatedTestStorage": "ComponentTests.dll",
+        "Steps": [
+          {
+            "Info": {
+              "Name": "GIVEN User not exist",
+              "GroupPrefix": "",
+              "Number": 1,
+              "Total": 3
+            },
+            "Comments": []
+          },
+          {
+            "Info": {
+              "Name": "WHEN UserRegisteredEvent received and phone verified",
+              "GroupPrefix": "",
+              "Number": 2,
+              "Total": 3
+            },
+            "Comments": [
+              "UserRegisteredEvent:",
+              "{\r\n  \"UserId\": \"1aba1f33-0936-4367-b798-d65aebe00ac6\",\r\n  \"Name\": \"Test\",\r\n  \"PhoneNumber\": \"capacity\",\r\n  \"Email\": \"metrics\",\r\n  \"IsPhoneVerified\": true,\r\n  \"OccuredAt\": \"2022-07-22T07:49:49.5203736+02:00\"\r\n}"
+            ]
+          },
+          {
+            "Info": {
+              "Name": "THEN User created in database",
+              "GroupPrefix": "",
+              "Number": 3,
+              "Total": 3
+            },
+            "Comments": [
+              "newUser:",
+              "{\r\n  \"Id\": \"1aba1f33-0936-4367-b798-d65aebe00ac6\",\r\n  \"Name\": \"Test\",\r\n  \"PhoneNumber\": \"capacity\",\r\n  \"Email\": \"metrics\"\r\n}"
+            ]
+          }
+        ]
+      },
+      {
+        "Info": {
+          "Name": "Ignore not verified User event",
+          "Code": "97AE9F85",
+          "Parent": {
+            "Name": "User registered event processing",
+            "Labels": [],
+            "Description": "UserRegisteredEvent"
+          },
+          "Labels": [],
+          "Categories": []
+        },
+        "AutomatedTestName": "ComponentTests.IntegrationMessages.User_registered_event_processing.Ignore_not_verified_User_event",
+        "AutomatedTestStorage": "ComponentTests.dll",
+        "Steps": [
+          {
+            "Info": {
+              "Name": "GIVEN User not exist",
+              "GroupPrefix": "",
+              "Number": 1,
+              "Total": 4
+            },
+            "Comments": []
+          },
+          {
+            "Info": {
+              "Name": "WHEN UserRegisteredEvent received and phone not verified",
+              "GroupPrefix": "",
+              "Number": 2,
+              "Total": 4
+            },
+            "Comments": [
+              "UserRegisteredEvent:",
+              "{\r\n  \"UserId\": \"3ab4881e-0478-4365-81e8-a131f3e1d4b1\",\r\n  \"Name\": \"emulation\",\r\n  \"PhoneNumber\": \"strategic\",\r\n  \"Email\": \"Cayman Islands Dollar\",\r\n  \"IsPhoneVerified\": false,\r\n  \"OccuredAt\": \"2022-07-22T08:22:42.6475+02:00\"\r\n}"
+            ]
+          },
+          {
+            "Info": {
+              "Name": "THEN it processed silently, dead-letter queue is empty",
+              "GroupPrefix": "",
+              "Number": 3,
+              "Total": 4
+            },
+            "Comments": []
+          },
+          {
+            "Info": {
+              "Name": "AND User is not created in database",
+              "GroupPrefix": "",
+              "Number": 4,
+              "Total": 4
+            },
+            "Comments": []
+          }
+        ]
+      }
+    ]
+  }
+]

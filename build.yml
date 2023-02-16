@@ -1,0 +1,68 @@
+trigger:
+  branches:
+    include:
+    - main
+pool:
+  vmImage: windows-latest
+variables:
+  NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
+
+steps:
+    - checkout: self
+      submodules: true
+
+    - task: NuGetAuthenticate@0
+    
+    - task: NuGetToolInstaller@0
+      displayName: 'Use NuGet >=5'
+      inputs:
+        versionSpec: '>=5'
+
+    - task: Cache@2
+      displayName: Cache
+      inputs:
+        key: 'nuget | "$(Agent.OS)" | **/packages.lock.json,!**/bin/**,!**/obj/**'
+        path: '$(NUGET_PACKAGES)'
+        restoreKeys: |
+          nuget | "$(Agent.OS)"
+          nuget
+        cacheHitVar: 'CACHE_RESTORED'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet restore'
+      condition: ne(variables.CACHE_RESTORED, true)
+      inputs:
+        restoreSolution: '**/*.sln'
+        feedsToUse: config
+        nugetConfigPath: nuget.config
+    
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: '**/AdoImportTestCases.csproj'
+        arguments: --output publish_output -r linux-x64 -p:PublishSingleFile=true --self-contained false
+        zipAfterPublish: false
+        modifyOutputPath: false
+    
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish app'
+      inputs:
+        PathtoPublish: publish_output
+        ArtifactName: tool
+
+    - task: PowerShell@2
+      condition: and(succeeded(), not(canceled()), eq(variables['Build.SourceBranchName'], 'main'))
+      name: RetainOnSuccess
+      displayName: Retain on Success
+      inputs:
+        failOnStderr: true
+        targetType: 'inline'
+        script: |
+          $contentType = "application/json";
+          $headers = @{ Authorization = 'Bearer $(System.AccessToken)' };
+          $rawRequest = @{ daysValid = 360; definitionId = $(System.DefinitionId); ownerId = 'User:$(Build.RequestedForId)'; protectPipeline = $false; runId = $(Build.BuildId) };
+          $request = ConvertTo-Json @($rawRequest);
+          $uri = "$(System.CollectionUri)$(System.TeamProject)/_apis/build/retention/leases?api-version=6.0-preview.1";
+          Invoke-RestMethod -uri $uri -method POST -Headers $headers -ContentType $contentType -Body $request;
